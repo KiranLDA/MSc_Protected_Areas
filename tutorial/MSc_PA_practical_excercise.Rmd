@@ -22,30 +22,27 @@ knitr::opts_chunk$set(echo = TRUE)#
 
 Protected areas are a cornerstone of conservation. In fact, the world has committed to protecting 30% of the planet by 2030. But how do we make that protection meaningful? This practical will use structured decision-making to protect land in Madagascar based on your species distribution maps from your previous practical.
 
-# Why systematic conservation planning?
-
-To understand the value of using an optimization, let's first try to solve [this problem](https://marxansolutions.org/training/#:~:text=Conservation%20Planning%20Exercise,with%20the%20lowest%20possible%20cost.) by selecting cells for conservation to meet targets for 3 species for the least cost. It's not as easy as it seems.
-
 # Installation
-## R, Rstudio and Rtools
+## R and Rstudio
 
-Make sure you have Rstudio, R and Rtools installed:
+Make sure you have Rstudio and R installed:
 
 - R: https://cran.r-project.org/bin/windows/base/
-- Rtools: https://cran.r-project.org/bin/windows/Rtools/
 - Rstudio: https://posit.co/download/rstudio-desktop/
+
+
+## Download the practical data
+
+1. Go to https://github.com/KiranLDA/MSc_Protected_Areas
+2. Click on the big green button 'CODE'.
+3. Select 'Download ZIP'.
+4. Save the file to your desktop.
+5. Once opened unzip/extract all files in the ZIP file.
+
 
 ## Packages
 
-Run the following code to ensure all packages are installed:
-
-- Packages for making pretty Rmarkdown documents:
-```r
-install.packages("knitr")
-install.packages("rmdformats")
-install.packages("prettydoc")
-```
-- Packages for protected areas:
+Go to `code/01_installation.R` to get a list of R packages to install. They are also copied below:
 
 ```r 
 install.packages("prioritizr")
@@ -53,6 +50,11 @@ install.packages("prioritizrdata")
 install.packages("terra")
 install.packages("highs", repos = "https://cran.rstudio.com/")
 ```
+
+# Excercise 1
+
+While the packages install, we can do this exercise to understand the value of using an optimization. Let's first try to solve [this problem](https://marxansolutions.org/training/#:~:text=Conservation%20Planning%20Exercise,with%20the%20lowest%20possible%20cost.) by selecting cells for conservation to meet targets for 3 species for the least cost. Once you meet the target, you can compare your solution with the optimal solution.
+
 # Load Packages
 
 ```{r load}
@@ -61,19 +63,11 @@ library(terra)
 ```
 
 
-## Specify the directory that you are working from
-
-Make sure you change the code to indicate your directory, and make sure that you use forward slash `/` or double back slash `\\` to separate your directories. 
-
-```{r dir}
-basepath = "C:/Users/kdh10kg/OneDrive - The Royal Botanic Gardens, Kew/teaching/2024-2025/MSC_practical/"
-```
-
 # Load the files
 
 We are going to be using the species that you are mapping as part of the Species Distribution Modelling (SDM) class. We are going to use the binary presence/absence outputs where the probability of a species presence has been translated into a yes/no.
 
-Each layer describes the spatial distribution of a feature. Here, our feature data correspond to different plant species. Specifically, the cell values denote the relative probability of a species occuring, with higher values indicating higher probability.
+Each layer describes the spatial distribution of a feature. Here, our feature data correspond to different plant species. Specifically, if the cell (or planning unit) has a 1, as species is predicted to be present in it based on the SDM. If the cell has a 0, then it is predicted to be absent.
 
 
 ## Load species distributions
