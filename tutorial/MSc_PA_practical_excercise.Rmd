@@ -7,12 +7,8 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)#
-#  rmarkdown::html_document:
-#    theme: lumen
-  # prettydoc::html_pretty:
-  #   theme: hpstr
-  #   highlight: github
+knitr::opts_chunk$set(root.dir = "C:/Users/kdh10kg/Documents/github/MSc_Protected_Areas/",
+                      echo = TRUE)#
 ```
 
 # Course overview
@@ -30,7 +26,6 @@ Make sure you have Rstudio and R installed:
 - R: https://cran.r-project.org/bin/windows/base/
 - Rstudio: https://posit.co/download/rstudio-desktop/
 
-
 ## Download the practical data
 
 1. Go to https://github.com/KiranLDA/MSc_Protected_Areas
@@ -38,7 +33,7 @@ Make sure you have Rstudio and R installed:
 3. Select 'Download ZIP'.
 4. Save the file to your desktop.
 5. Once opened unzip/extract all files in the ZIP file.
-
+6. Then also unzip the rasters inside `data/data.zip` into the `data` folder.
 
 ## Packages
 
@@ -51,9 +46,21 @@ install.packages("terra")
 install.packages("highs", repos = "https://cran.rstudio.com/")
 ```
 
-# Excercise 1
+# Exercise 1
 
 While the packages install, we can do this exercise to understand the value of using an optimization. Let's first try to solve [this problem](https://marxansolutions.org/training/#:~:text=Conservation%20Planning%20Exercise,with%20the%20lowest%20possible%20cost.) by selecting cells for conservation to meet targets for 3 species for the least cost. Once you meet the target, you can compare your solution with the optimal solution.
+
+# Start the practical in R
+
+Now get the code for the practical from Go to `code/02_practical.R` 
+
+# Set the Working Directory
+
+Replace with the path where you downloaded `MSc_Protected_Areas`. This means that your code will run from this directory. Make sure you use `/` or `\\` in your path name, otherwise you will get an error.
+
+```{r wd}
+setwd("C:/Users/kdh10kg/Documents/github/MSc_Protected_Areas/")
+```
 
 # Load Packages
 
@@ -72,15 +79,12 @@ Each layer describes the spatial distribution of a feature. Here, our feature da
 
 ## Load species distributions
 
-
 ```{r species}
 # put them together into a multi-layer raster
-species = terra::rast(paste0(basepath,"species.tif"))
-
+species = terra::rast("data/species.tif")
 ```
 
 ### Plot species individual maps
-
 
 ```{r map separate}
 plot(species[[1:3]], nr = 1, axes = FALSE)
@@ -97,11 +101,17 @@ plot(sum(species))
 
 ## Load Cost Data
 
-A very important element of protected area planning is the cost. Wherever we put a protected, there will be a cost involved. Cost can be direct (someone has done an economic evaluation about economic losses of converting land from e.g. grazing land to  protected land, and the costs of purchasing that land). However, costs are more often indirectly estimated using, for example, the human footprint index, to see where people are using land. We then make the assumption that areas that people use are most costly and created the greatest conflict, and should be avoided as a place to put a protected area.
+A very important element of protected area planning is the cost. Wherever we put a protected area, there will be a cost involved. Cost can be:
+
+- directly estimated: we can do an economic evaluation about economic losses of converting land to  protected land. This can be through the cost of purchasing land, costing the staff needed to patrol, the revenue from tourism, the loss of opportunities (loss of mining land, grazing land, agricultural land, and even homes).
+- indirectly estimated: we can estimate what land is most costly. For example, the human footprint index is often used to see where people are using land. We then make the assumption that areas that people use are most costly and created the greatest conflict, and should be avoided as a place to put a protected area.
+
+Here, it's an excecise, so we use the Human footprint layer, which is downloaded from this paper:
+https://www.nature.com/articles/s41597-022-01284-8#Sec12
 
 ```{r cost}
 # load the file
-cost0 = rast(paste0(basepath, "cost.tif"))
+cost0 = rast("data/cost.tif")
 
 # Plot the file
 par(mfrow = c(1,2)) # put 2 plots side by side
@@ -133,11 +143,9 @@ The world is a sphere, and for us to visualise it on paper as a rectangle, we ne
 
 
 
-```{r image_grobs, fig.show = "hold", out.width = "50%", fig.align = "default", echo=FALSE}
+```{r image_grob8, fig.show = "hold", out.width = "40%", fig.align = "default", echo=FALSE}
 
 knitr::include_graphics("https://i.guim.co.uk/img/static/Guardian/global/gallery/2009/apr/17/geography/mercator-5130.jpg?w=1010&q=20&auto=format&usm=12&fit=max&dpr=2&s=7fee64700cc5a92d3ffd1ad6306ad53e")
-
-
 
 knitr::include_graphics("https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Winkel_triple_projection_SW.jpg/700px-Winkel_triple_projection_SW.jpg")
 
@@ -279,7 +287,7 @@ print(p1_target_coverage)
 ```{r}
 print(mean(p1_target_coverage$met) * 100)
 ```
-# Excercise 1
+# Exercise 2
 
 How many species have 70% of their range protected?
 
@@ -317,7 +325,7 @@ We can load in the PA data, but note that it also needs to be re-scaled so that 
 
 ```{r}
 # load protected areas
-PAs = terra::rast(paste0(basepath, "locked_in.tif"))
+PAs = terra::rast("data/locked_in.tif")
 
 #add the land in
 PAs = ifel((!is.na(cost0) & is.na(PAs)),0,PAs )
@@ -337,7 +345,7 @@ Notice that some PAs get swallowed up by the resolution change.
 The function `add_locked_in_constraints()` allows us to add in areas that are "locked in" i.e. already conserved or protected. 
 
 ```{r}
-# need to reset budget because it was modified in exercise 1
+# need to reset budget because it was modified in exercise 2
 budget <- terra::global(cost, "sum", na.rm = TRUE)[[1]] * 0.3
 
 p2 <-  p1 %>%
@@ -373,7 +381,7 @@ print(mean(p2_target_coverage$met) * 100)
 We can further modify the problem by adding penalties that punish overly fragmented solutions (via `add_boundary_penalties()`). Here we will use a penalty factor (i.e., boundary length modifier) of 0.003, and an edge factor of 50% so that planning units that occur on the outer edge of the study area are not overly penalized.
 
 ```{r}
-# need to reset budget because it was modified in exercise 1
+# need to reset budget because it was modified in exercise 2
 budget <- terra::global(cost, "sum", na.rm = TRUE)[[1]] * 0.3
 
 # create new problem with boundary penalties added to it
@@ -402,7 +410,7 @@ print(mean(p3_target_coverage$met) * 100)
 
 What is the first thing you notice? It's much longer... This is because it has to compute a lot more relationships between cells/planning units.
 
-# Exercise 2
+# Exercise 3
 
 Modify the edge factor to 0.2 and the penalty to 0.7 and see what happens
 
@@ -451,14 +459,14 @@ plot(
 ```
 
 
-# Exercise 3 (Bonus)
+# Exercise 4 (Bonus)
 
 As a final exercise, you will "lock out" some areas from protection. These are places like cities that should be ignored from the prioritisation. 
 
 Go find the `locked_out.tif` raster in your data directory and use `terra::rast` to import it. Then use the `  add_locked_out_constraints()` to lock out your raster from the p2 problem we formulated. If you want you can also plot the locked_out data layer
 
 ```{r, fig.width=5, fig.height=7, echo=FALSE}
-locked_out = terra::rast(paste0(basepath, "locked_out.tif"))
+locked_out = terra::rast("data/locked_out.tif")
 
 # need to reset budget because it was modified in exercise 1
 budget <- terra::global(cost, "sum", na.rm = TRUE)[[1]] * 0.3
