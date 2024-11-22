@@ -1,0 +1,498 @@
+---
+title: "Protected Areas Practical"
+author: "Kiran Dhanjal-Adams"
+date: "2024-11-29"
+output:
+  rmdformats::robobook   
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)#
+#  rmarkdown::html_document:
+#    theme: lumen
+  # prettydoc::html_pretty:
+  #   theme: hpstr
+  #   highlight: github
+```
+
+# Course overview
+
+- Learn how and why protected areas are important
+- Learn how to implement a protected area network
+
+Protected areas are a cornerstone of conservation. In fact, the world has committed to protecting 30% of the planet by 2030. But how do we make that protection meaningful? This practical will use structured decision-making to protect land in Madagascar based on your species distribution maps from your previous practical.
+
+# Why systematic conservation planning?
+
+To understand the value of using an optimization, let's first try to solve [this problem](https://marxansolutions.org/training/#:~:text=Conservation%20Planning%20Exercise,with%20the%20lowest%20possible%20cost.) by selecting cells for conservation to meet targets for 3 species for the least cost. It's not as easy as it seems.
+
+# Installation
+## R, Rstudio and Rtools
+
+Make sure you have Rstudio, R and Rtools installed:
+
+- R: https://cran.r-project.org/bin/windows/base/
+- Rtools: https://cran.r-project.org/bin/windows/Rtools/
+- Rstudio: https://posit.co/download/rstudio-desktop/
+
+## Packages
+
+Run the following code to ensure all packages are installed:
+
+- Packages for making pretty Rmarkdown documents:
+```r
+install.packages("knitr")
+install.packages("rmdformats")
+install.packages("prettydoc")
+```
+- Packages for protected areas:
+
+```r 
+install.packages("prioritizr")
+install.packages("prioritizrdata")
+install.packages("terra")
+install.packages("highs", repos = "https://cran.rstudio.com/")
+```
+# Load Packages
+
+```{r load}
+library(prioritizr)
+library(terra)
+```
+
+
+## Specify the directory that you are working from
+
+Make sure you change the code to indicate your directory, and make sure that you use forward slash `/` or double back slash `\\` to separate your directories. 
+
+```{r dir}
+basepath = "C:/Users/kdh10kg/OneDrive - The Royal Botanic Gardens, Kew/teaching/2024-2025/MSC_practical/"
+```
+
+# Load the files
+
+We are going to be using the species that you are mapping as part of the Species Distribution Modelling (SDM) class. We are going to use the binary presence/absence outputs where the probability of a species presence has been translated into a yes/no.
+
+Each layer describes the spatial distribution of a feature. Here, our feature data correspond to different plant species. Specifically, the cell values denote the relative probability of a species occuring, with higher values indicating higher probability.
+
+
+## Load species distributions
+
+
+```{r species}
+# put them together into a multi-layer raster
+species = terra::rast(paste0(basepath,"species.tif"))
+
+```
+
+### Plot species individual maps
+
+
+```{r map separate}
+plot(species[[1:3]], nr = 1, axes = FALSE)
+
+```
+
+### Plot species together
+
+We have 41 species that we can use to develop a species richness map.
+
+```{r map all}
+plot(sum(species))
+```
+
+## Load Cost Data
+
+A very important element of protected area planning is the cost. Wherever we put a protected, there will be a cost involved. Cost can be direct (someone has done an economic evaluation about economic losses of converting land from e.g. grazing land to  protected land, and the costs of purchasing that land). However, costs are more often indirectly estimated using, for example, the human footprint index, to see where people are using land. We then make the assumption that areas that people use are most costly and created the greatest conflict, and should be avoided as a place to put a protected area.
+
+```{r cost}
+# load the file
+cost0 = rast(paste0(basepath, "cost.tif"))
+
+# Plot the file
+par(mfrow = c(1,2)) # put 2 plots side by side
+plot(cost0, main = "Cost as Human footprint")
+plot(sum(species), main="Species richness")
+par(mfrow = c(1,1)) 
+```
+
+# Dataset Resolution
+
+Notice that cost is very fine scale while the species data are coarse. We need to lower the resolution of the cost data so that it is the same as the species data.
+```{r image_grob0, fig.show = "hold", out.width = "50%", fig.align = "default", echo=FALSE}
+knitr::include_graphics("https://desktop.arcgis.com/en/arcmap/latest/manage-data/raster-and-images/GUID-28F4DF81-C24F-4B14-A3FE-74B9737766D1-web.gif")
+```
+
+```{r resolution}
+par(mfrow=c(1,2))
+plot(cost0, main = "Cost High Res")
+cost = terra::aggregate(cost0, fact = 12, fun = "median",  na.rm=TRUE)
+plot(cost, main = "Cost Low Res")
+par(mfrow=c(1,1))
+```
+
+# Spatial extent
+
+Why should I care about the spatial extent of my data or it's projection?
+
+The world is a sphere, and for us to visualise it on paper as a rectangle, we need to make some transformation or "projections". This can lead to some regions becoming more stretched than others, and some regions being more compressed. The most common projection, the Mercator projection (left), makes the northern hemisphere look larger than the southern hemisphere. We can have equal area projections (right) such as Winkel-Tripel that correct for this, but then make places like New Zealand look very squashed. No projection is perfect.
+
+
+
+```{r image_grobs, fig.show = "hold", out.width = "50%", fig.align = "default", echo=FALSE}
+
+knitr::include_graphics("https://i.guim.co.uk/img/static/Guardian/global/gallery/2009/apr/17/geography/mercator-5130.jpg?w=1010&q=20&auto=format&usm=12&fit=max&dpr=2&s=7fee64700cc5a92d3ffd1ad6306ad53e")
+
+
+
+knitr::include_graphics("https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Winkel_triple_projection_SW.jpg/700px-Winkel_triple_projection_SW.jpg")
+
+```
+
+
+Many datasets each use different projections, so it is important to make sure all the different files have the same extent (x and y limits), and the same resolution (pixel size)
+
+## Extent
+```{r extent}
+ext(cost)
+ext(species)
+```
+
+Do they look the same?
+
+## Resolution
+
+Resolution is also important as we need the cells to all line-up to be able to match them and make calulations.
+
+```{r image_grobsi, fig.show = "hold", out.width = "50%", fig.align = "default", echo=FALSE}
+knitr::include_graphics("https://docs.safe.com/fme/html/FME-Form-Documentation/FME-Transformers/Examples/Raster/rasterresampler_small_491x272.png")
+```
+
+This code is here to check that they line up
+
+```{r res}
+res(cost)
+res(species)
+```
+
+Do they look the same?
+
+
+# Solvers
+ 
+`prioritizr` is a package that relies on a solver... to solve the problem. 
+
+So let’s make sure that we have a solver installed. This is important because prioritizr interfaces with the solver to use it's optimization algorithms to generate spatial prioritizations. 
+
+If this is your first time using the prioritizr R package, please install the HiGHS solver using the following R code. Although the HiGHS solver is relatively fast and easy to install. If later you really get into protected area planning, then use your Queen Mary VPN to install the Gurobi software suite and the gurobi R package for best performance (see the [Gurobi Installation Guide for details](https://prioritizr.net/articles/gurobi_installation_guide.html)).
+
+```r
+# if needed, install HiGHS solver, but this should have been done before the practical
+install.packages("highs", repos = "https://cran.rstudio.com/")
+```
+
+# Spatial Prioritization
+
+## Formulate the problem
+
+Now, let’s generate a spatial prioritization. We want to solve the following problem:
+
+ **I want to protect as many species as possible within my budget by setting cells aside for protection, aiming for 40% of the range of each species**
+ 
+The things that we need to track are:
+
+- **Budget**: the total cost of the prioritization will represent a 22% of the total land value in the study area. Given this budget, we want the prioritization to increase feature representation, as much as possible, 
+- **Features**: each feature (i.e. species) would, ideally, have 30% of its distribution covered by the prioritization. In this scenario, we can either purchase all of the land inside a given planning unit, or none of the land inside a given planning unit. 
+- **Planning Units**: These are sites that we are considering to protect or not. We have the option to protect or not each site. In this case, each site represents one pixel of the raster
+
+We then need to translate this to code:
+
+- We start by creating a new `problem()` that will use a
+- **minimum shortfall objective** to spend the budget while getting as much as possible (via `add_min_shortfall_objective()`), with 
+- **relative targets of 30%** of the range of each species(via `add_relative_targets()`), 
+- **binary decisions** to purchase+protect or not (via `add_binary_decisions()`), and 
+- **near-optimal solutions** (i.e., 10% from optimality) using the 
+- **best solver** installed on our computer (via `add_default_solver()`).
+
+```{r problem1}
+# calculate budget
+budget <- terra::global(cost, "sum", na.rm = TRUE)[[1]] * 0.3
+
+# create problem
+p1 <-
+  problem(cost, features = species) %>%
+  add_min_shortfall_objective(budget) %>%
+  add_relative_targets(0.3) %>%
+  add_binary_decisions() %>%
+  add_default_solver(gap = 0.1, verbose = FALSE)
+
+# print problem
+print(p1)
+```
+
+## Solve the problem
+
+Now that the problem has been formulated, all we need to do is  solve it
+
+```{r solv1}
+s1 <- solve(p1)
+```
+
+## Extract the objective
+
+```{r}
+print(attr(s1, "objective"))
+```
+## Get the time it took to solve
+
+in seconds
+```{r}
+print(attr(s1, "runtime"))
+```
+
+## Get the status of the solver
+
+i.e. was it optimal or not?
+
+```{r}
+print(attr(s1, "status"))
+```
+
+## Plot
+
+```{r}
+plot(s1, main = "Solution", axes = FALSE)
+```
+
+## How many planning units were protected per solution?
+
+```{r}
+eval_n_summary(p1, s1)
+```
+
+## How much does it cost?
+```{r}
+eval_cost_summary(p1, s1)
+```
+
+## Was each species protected 30%?
+```{r}
+p1_target_coverage <- eval_target_coverage_summary(p1, s1)
+print(p1_target_coverage)
+```
+
+## How many were not protected 30%
+```{r}
+print(mean(p1_target_coverage$met) * 100)
+```
+# Excercise 1
+
+How many species have 70% of their range protected?
+
+```{r}
+# calculate budget
+budget <- terra::global(cost, "sum", na.rm = TRUE)[[1]] * 0.3
+
+# create problem
+pt <-
+  problem(cost, features = species) %>%
+  add_min_shortfall_objective(budget) %>%
+  add_relative_targets(0.7) %>%
+  add_binary_decisions() %>%
+  add_default_solver(gap = 0.1, verbose = FALSE)
+
+# print problem
+print(pt)
+
+st <- solve(pt)
+
+pt_target_coverage <- eval_target_coverage_summary(pt, st)
+print(pt_target_coverage)
+
+
+print(mean(pt_target_coverage$met) * 100)
+```
+
+# Adding existing PAs
+
+Madagascar already had a Protected Area network. Do the areas we are protecting overlap with the existing protected areas? Perhaps we should develop protected areas that complement and enhance the existing ones.
+
+## Load in PA data
+
+We can load in the PA data, but note that it also needs to be re-scaled so that the code will run faster.
+
+```{r}
+# load protected areas
+PAs = terra::rast(paste0(basepath, "locked_in.tif"))
+
+#add the land in
+PAs = ifel((!is.na(cost0) & is.na(PAs)),0,PAs )
+
+# Re-scale
+par(mfrow = c(1,2))
+plot(PAs, main="High Res PAs")
+PAs = terra::aggregate(PAs, fact = 12, fun = "modal",  na.rm=TRUE)
+plot(PAs, main="Low Res PAs")
+par(mfrow = c(1,1))
+```
+
+Notice that some PAs get swallowed up by the resolution change.
+
+## Modify the problem to add PAs in
+
+The function `add_locked_in_constraints()` allows us to add in areas that are "locked in" i.e. already conserved or protected. 
+
+```{r}
+# need to reset budget because it was modified in exercise 1
+budget <- terra::global(cost, "sum", na.rm = TRUE)[[1]] * 0.3
+
+p2 <-  p1 %>%
+  add_locked_in_constraints(PAs) # this is the only new line
+
+# solve the problem
+s2 <- solve(p2)
+
+# plot the solution
+par(mfrow=c(1,2)) # split plot into 2 panels
+plot(s1, main = "without PAs", axes = FALSE)
+plot(s2, main = "With PAs", axes = FALSE)
+par(mfrow=c(1,1)) # Go back to one plot
+
+
+# calculate number of selected planning units by solution
+eval_n_summary(p2, s2)
+
+# calculate total cost of solution
+eval_cost_summary(p2, s2)
+
+# calculate target coverage for the solution
+p2_target_coverage <- eval_target_coverage_summary(p2, s2)
+print(p2_target_coverage)
+
+# check percentage of the features that have their target met given the solution
+print(mean(p2_target_coverage$met) * 100)
+
+```
+
+# Add boundary penalty
+
+We can further modify the problem by adding penalties that punish overly fragmented solutions (via `add_boundary_penalties()`). Here we will use a penalty factor (i.e., boundary length modifier) of 0.003, and an edge factor of 50% so that planning units that occur on the outer edge of the study area are not overly penalized.
+
+```{r}
+# need to reset budget because it was modified in exercise 1
+budget <- terra::global(cost, "sum", na.rm = TRUE)[[1]] * 0.3
+
+# create new problem with boundary penalties added to it
+p3 <-
+  p2 %>%
+  add_boundary_penalties(penalty = 0.003, edge_factor = 0.7)
+
+# solve the problem
+s3 <- solve(p3)
+
+# plot the solution
+par(mfrow=c(1,3))# split into 3 plots side by side
+plot(s1, main = "Baseline", axes = FALSE)
+plot(s2, main = "With PAs", axes = FALSE)
+plot(s3, main = "With Boundary layer", axes = FALSE)
+par(mfrow=c(1,1))# go back to only 1 plot
+
+# calculate target coverage for the solution
+p3_target_coverage <- eval_target_coverage_summary(p3, s3)
+print(p3_target_coverage)
+
+# check percentage of the features that have their target met given the solution
+print(mean(p3_target_coverage$met) * 100)
+
+```
+
+What is the first thing you notice? It's much longer... This is because it has to compute a lot more relationships between cells/planning units.
+
+# Exercise 2
+
+Modify the edge factor to 0.2 and the penalty to 0.7 and see what happens
+
+
+```{r}
+pz <-
+  p2 %>%
+  add_boundary_penalties(penalty = 0.7, edge_factor = 0.2)
+
+# solve the problem
+sz <- solve(pz)
+
+# plot the solution
+plot(sz, main = "Solution", axes = FALSE)
+
+# calculate target coverage for the solution
+pz_target_coverage <- eval_target_coverage_summary(pz, sz)
+print(pz_target_coverage)
+
+# check percentage of the features that have their target met given the solution
+print(mean(pz_target_coverage$met) * 100)
+```
+
+Reducing the edge factor makes it even blockier!
+
+# Calculate importance scores
+
+The importance of irreplaceaability tells you how important each cell is to the solution, if it is red, you absolutely need to protect that cell. If it is beige, it is interchangeable with other cells. If you have a lot of common species (like we do), then most of them will be beige, but if you have rare narrow range endemics, then those cells will become red. 
+
+```{r}
+rc <-
+  p3 %>%
+  eval_ferrier_importance(s3)
+
+# print scores
+print(rc)
+
+# plot the total importance scores
+## note that gray cells are not selected by the prioritization
+plot(
+  rc[["total"]], main = "Importance scores", axes = FALSE,
+  breaks = c(0, 1e-10, 0.005, 0.01, 0.025),
+  col = c("#e5e5e5", "#fff7ec", "#fc8d59", "#7f0000")
+)
+
+```
+
+
+# Exercise 3 (Bonus)
+
+As a final exercise, you will "lock out" some areas from protection. These are places like cities that should be ignored from the prioritisation. 
+
+Go find the `locked_out.tif` raster in your data directory and use `terra::rast` to import it. Then use the `  add_locked_out_constraints()` to lock out your raster from the p2 problem we formulated. If you want you can also plot the locked_out data layer
+
+```{r, fig.width=5, fig.height=7, echo=FALSE}
+locked_out = terra::rast(paste0(basepath, "locked_out.tif"))
+
+# need to reset budget because it was modified in exercise 1
+budget <- terra::global(cost, "sum", na.rm = TRUE)[[1]] * 0.3
+
+# create new problem with boundary penalties added to it
+p4 <-
+  p2 %>%
+  add_locked_out_constraints(locked_out)
+
+# solve the problem
+s4 <- solve(p4)
+
+# plot the solution
+par(mfrow=c(2,2))# split into 3 plots side by side
+plot(s1, main = "Baseline", axes = FALSE)
+plot(s2, main = "With PAs", axes = FALSE)
+plot(s4, main = "With PAs + Avoid cities", axes = FALSE)
+plot(s3, main = "With PAs + Boundary layer", axes = FALSE)
+par(mfrow=c(1,1))# go back to only 1 plot
+
+# calculate target coverage for the solution
+p4_target_coverage <- eval_target_coverage_summary(p4, s4)
+print(p4_target_coverage)
+
+# check percentage of the features that have their target met given the solution
+print(mean(p4_target_coverage$met) * 100)
+
+```
+
+Notice that it reality it doesn't change much because we are using the same data to derive the cost layer and the 
+
