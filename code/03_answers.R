@@ -42,6 +42,10 @@ plot(sum(species))
 # Wherever we put a protected area, there will be a cost involved. 
 # 
 # Cost can be:
+# 
+# - no cost: cost is equal across all planning units, which means the prioritisation
+# will only rely on the biodiversity data. However, a protected area plan that doesn't 
+# account for cost is not likely to be very helpful.
 #   
 # - directly estimated: we can do an economic evaluation about economic losses of 
 # converting land to  protected land. This can be through the cost of purchasing land, 
@@ -96,9 +100,15 @@ res(species)
 
 
 
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Solvers
-# if needed, install HiGHS solver, but this should have been done before the practical
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# test the installation
+library(highs)
+
+# if there's an error or it doesn't load, install HiGHS solver, 
+# but this should have been done before the practical
 # install.packages("highs", repos = "https://cran.rstudio.com/")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -403,6 +413,8 @@ plot(
 # where cost is set to 1 on land, and NA everywhere else. 
 # We will then  replacee `cost` with `cost_null` in` problem(cost, features = species)`. 
 # How does it compare to the layer with cost?
+
+# Hint: replace all `cost` with `cost_null` in `budget` and `pr`
 
 
 # make the cost 1 on land and NA at sea

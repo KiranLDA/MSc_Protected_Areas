@@ -13,8 +13,9 @@ knitr::opts_chunk$set(root.dir = "C:/Users/kdh10kg/Documents/github/MSc_Protecte
 
 # Course overview
 
-- Learn how and why protected areas are important
-- Learn how to implement a protected area network
+- Learn how and why protected areas are important (Lecture)
+- Lear the principles of systematic conservation planning (Lecture)
+- Learn how to implement a protected area network (Lecture + Practical)
 
 Protected areas are a cornerstone of conservation. In fact, the world has committed to protecting 30% of the planet by 2030. But how do we make that protection meaningful? This practical will use structured decision-making to protect land in Madagascar based on your species distribution maps from your previous practical. The software we will use to do this is `prioritizr`.
 
@@ -190,6 +191,9 @@ So let’s make sure that we have a solver installed. This is important because 
 If this is your first time using the prioritizr R package, please install the HiGHS solver using the following R code. Although the HiGHS solver is relatively fast and easy to install. If later you really get into protected area planning, then use your Queen Mary VPN to install the Gurobi software suite and the Gurobi R package for best performance (see the [Gurobi Installation Guide for details](https://prioritizr.net/articles/gurobi_installation_guide.html)).
 
 ```r
+# test the installation
+library(highs)
+
 # if needed, install HiGHS solver, but this should have been done before the practical
 install.packages("highs", repos = "https://cran.rstudio.com/")
 ```

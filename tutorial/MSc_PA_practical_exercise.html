@@ -1892,7 +1892,7 @@ it</p>
 <p>in seconds</p>
 <div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">attr</span>(s1, <span class="st">&quot;runtime&quot;</span>))</span></code></pre></div>
 <pre><code>## solution_1 
-##       0.42</code></pre>
+##       0.44</code></pre>
 </div>
 <div id="get-the-status-of-the-solver" class="section level2">
 <h2>Get the status of the solver</h2>
@@ -2220,6 +2220,8 @@ set to 1 on land, and NA everywhere else. We will then replacee
 <code>cost</code> with <code>cost_null</code>
 in<code>problem(cost, features = species)</code>. How does it compare to
 the layer with cost?</p>
+<p>Hint: replace all <code>cost</code> with <code>cost_null</code> in
+<code>budget</code> and <code>pr</code></p>
 <pre><code>cost_null = ifel(!is.na(cost),1,NA)
 
 # calculate budget
@@ -2227,7 +2229,7 @@ budget &lt;- terra::global(cost, &quot;sum&quot;, na.rm = TRUE)[[1]] * 0.3 # rep
 
 # create problem
 pr &lt;-
-  problem(cost, features = species) %&gt;% # replacee cost with cost_null i
+  problem(cost, features = species) %&gt;% # replacee cost with cost_null here
   add_min_shortfall_objective(budget) %&gt;%
   add_relative_targets(0.3) %&gt;%
   add_binary_decisions() %&gt;%
@@ -2242,9 +2244,6 @@ plot(s1, main = &quot;with cost&quot;, axes = FALSE)
 plot(sr, main = &quot;without cost&quot;, axes = FALSE)
 par(mfrow=c(1,1))# go back to only 1 plot
 </code></pre>
-<p>Notice how it looks a lot more like the current protected area
-system… This is hinting that the national prioritisation didn’t include
-cost as a factor shaping the prioritisation</p>
 </div>
 
    
