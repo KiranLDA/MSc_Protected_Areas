@@ -26,4 +26,4 @@ install.packages("highs", repos = "https://cran.rstudio.com/")
 
 ## Run the practical 
 
-The practical code is here `code/01_practical.R`, and if you want to have a more visually pretty version of the code, it is in `tutorial/MSc_PA_oractical_excercise.html`
+The practical code is here `code/01_practical.R`, and if you want to have a more visually pretty version of the code, it is in `tutorial/MSc_PA_practical_excercise.html`

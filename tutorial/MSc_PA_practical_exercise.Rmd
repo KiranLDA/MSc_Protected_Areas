@@ -291,7 +291,7 @@ print(mean(p1_target_coverage$met) * 100)
 
 How many species have 70% of their range protected?
 
-```{r}
+```
 # calculate budget
 budget <- terra::global(cost, "sum", na.rm = TRUE)[[1]] * 0.3
 
@@ -299,7 +299,7 @@ budget <- terra::global(cost, "sum", na.rm = TRUE)[[1]] * 0.3
 pt <-
   problem(cost, features = species) %>%
   add_min_shortfall_objective(budget) %>%
-  add_relative_targets(0.7) %>%
+  add_relative_targets(0.3) %>% # change this line
   add_binary_decisions() %>%
   add_default_solver(gap = 0.1, verbose = FALSE)
 
@@ -415,10 +415,10 @@ What is the first thing you notice? It's much longer... This is because it has t
 Modify the edge factor to 0.2 and the penalty to 0.7 and see what happens
 
 
-```{r}
+```
 pz <-
   p2 %>%
-  add_boundary_penalties(penalty = 0.7, edge_factor = 0.2)
+  add_boundary_penalties(penalty = 0.003, edge_factor = 0.5) # change the values here
 
 # solve the problem
 sz <- solve(pz)
@@ -465,7 +465,7 @@ As an exercise, you will "lock out" some areas from protection. These are places
 
 Go find the `locked_out.tif` raster in your data directory and use `terra::rast` to import it. Then use the `  add_locked_out_constraints()` to lock out your raster from the p2 problem we formulated. If you want you can also plot the locked_out data layer
 
-```{r, fig.width=5, fig.height=7}
+```
 locked_out = terra::rast("data/locked_out.tif")
 
 # need to reset budget because it was modified in exercise 1
@@ -474,7 +474,7 @@ budget <- terra::global(cost, "sum", na.rm = TRUE)[[1]] * 0.3
 # create new problem with boundary penalties added to it
 p4 <-
   p2 %>%
-  add_locked_out_constraints(locked_out)
+  # add add_locked_out_constraints(locked_out) here
 
 # solve the problem
 s4 <- solve(p4)
@@ -486,14 +486,11 @@ plot(s2, main = "With PAs", axes = FALSE)
 plot(s4, main = "With PAs + Avoid cities", axes = FALSE)
 plot(s3, main = "With PAs + Boundary layer", axes = FALSE)
 par(mfrow=c(1,1))# go back to only 1 plot
-
-
 ```
 
 Notice that it reality it doesn't change much because we are using the same data to derive the cost layer and the locked out layer. However locking areas out of the prioritisation means that some "expensive" but biodiverse sites cannot be protected, and need to be replaced with more and cheaper planning units, meaning that more land has to be protected in compensation...
 
-```{r}
-
+```
 # calculate target coverage for the solution
 p4_target_coverage <- eval_target_coverage_summary(p4, s4)
 print(p4_target_coverage)
@@ -508,11 +505,10 @@ print(mean(p4_target_coverage$met) * 100)
 
 Marxan addresses conservation problems the opposite way round to prioritizr. It tries to find the cheapest solution (that will impact the least people) while meeting the biodiversity target (here to protect 30% of the range of each species). This can be done by replacing `add_min_shortfall_objective(budget)` with `add_min_set_objective()` in the `p1` solution. We no longer rely on a budget. 
 
-```{r}
+```
 py <-
   problem(cost, features = species) %>%
-  # add_min_shortfall_objective(budget) %>% # replace this
-  add_min_set_objective() %>% # with this
+  add_min_shortfall_objective(budget) %>% # replace this with add_min_set_objective()
   add_relative_targets(0.3) %>%
   add_binary_decisions() %>%
   add_locked_in_constraints(PAs) %>%
@@ -526,5 +522,4 @@ par(mfrow=c(1,2))# split into 2 plots side by side
 plot(s1, main = "maximise biodiversity", axes = FALSE)
 plot(sy, main = "minimise cost", axes = FALSE)
 par(mfrow=c(1,1))# go back to only 1 plot
-
 ```

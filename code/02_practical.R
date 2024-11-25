@@ -302,13 +302,17 @@ print(mean(p3_target_coverage$met) * 100)
 
 pz <-
   p2 %>%
-  add_boundary_penalties(penalty = 0.7, edge_factor = 0.2)
+  add_boundary_penalties(penalty = 0.005)
 
 # solve the problem
 sz <- solve(pz)
 
 # plot the solution
+par(mfrow=c(1,2))
+plot(s3, main = "Solution", axes = FALSE)
 plot(sz, main = "Solution", axes = FALSE)
+par(mfrow=c(1,1))
+
 
 # calculate target coverage for the solution
 pz_target_coverage <- eval_target_coverage_summary(pz, sz)
@@ -392,3 +396,29 @@ print(mean(p4_target_coverage$met) * 100)
 # derive the cost layer and the locked out data
 
 plot(3*s1+s2, main = "Baseline", axes = FALSE)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Exercise 5 (Bonus)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+# Get the cheapest solution that meets the biodiversity target, this can be done by replacing 
+# add_min_shortfall_objective(budget) with add_min_set_objective() in p1. We no longer rely on a budget
+
+py <-
+  problem(cost, features = species) %>%
+  # add_min_shortfall_objective(budget) %>% # replace this
+  add_min_set_objective() %>% # with this
+  add_relative_targets(0.3) %>%
+  add_binary_decisions() %>%
+  add_locked_in_constraints(PAs) %>%
+  add_default_solver(gap = 0.1, verbose = FALSE)
+
+sy <- solve(py)
+
+
+plot(
+  sy, main = "Prioritization",
+  col = c("grey90", "darkgreen")
+)
+
