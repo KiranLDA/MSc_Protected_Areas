@@ -12,7 +12,6 @@
 3. Select 'Download ZIP'.
 4. Save the file to your desktop.
 5. Once opened unzip/extract all files in the ZIP file.
-6. Then also unzip the rasters inside `data/data.zip` into the `data` folder.
 
 ## Packages
 
@@ -28,5 +27,6 @@ install.packages("highs", repos = "https://cran.rstudio.com/")
 
 ## Run the practical 
 
-1. Open `tutorial/MSc_PA_practical_exercise.html` to get the insttructions of the exercises.
-2. The practical code is in `code/01_practical.R`
+1. Open `tutorial/MSc_PA_practical_exercise.html` to get the instructions of the exercises.
+2. The practical code is in `code/02_practical.R`
+3. Set your working directory in the code to your unzipped directory (probably `MSc_Protected_Areas-main/MSc_Protected_Areas-amin`)
