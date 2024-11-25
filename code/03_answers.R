@@ -170,7 +170,7 @@ print(mean(p1_target_coverage$met) * 100)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # How many species have 70% of their range protected?
 
-# Hint: replace the value in `add_relative_targets()`
+# Hint: change the values in add_relative_targets
 
 # calculate budget
 budget <- terra::global(cost, "sum", na.rm = TRUE)[[1]] * 0.3
@@ -179,7 +179,7 @@ budget <- terra::global(cost, "sum", na.rm = TRUE)[[1]] * 0.3
 pt <-
   problem(cost, features = species) %>%
   add_min_shortfall_objective(budget) %>%
-  add_relative_targets(0.3) %>% # change the 0.3 here
+  add_relative_targets(0.7) %>%
   add_binary_decisions() %>%
   add_default_solver(gap = 0.1, verbose = FALSE)
 
@@ -213,7 +213,7 @@ PAs = ifel((!is.na(cost0) & is.na(PAs)),0,PAs )
 # Re-scale
 par(mfrow = c(1,2))
 plot(PAs, main="High Res PAs")
-PAs = terra::aggregate(PAs, fact = 12, fun = "modal",  na.rm=TRUE)
+PAs = terra::aggregate(PAs, fact = 12, fun = "modal",  na.rm=TRUE) # rescale
 plot(PAs, main="Low Res PAs")
 par(mfrow = c(1,1))
 
@@ -324,14 +324,14 @@ plot(
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Exercise 3: Lock out some areas
+# Exercise 3: lock out some areas
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # You will "lock out" some areas from protection. 
 # These are places like cities that should be ignored from the prioritisation. 
 # 
 # Go find the `locked_out.tif` raster in your data directory and use `terra::rast` 
-# to import it. Then use the `add_locked_out_constraints(locked_out)` to lock out your raster 
+# to import it. Then use the `  add_locked_out_constraints()` to lock out your raster 
 # from the p2 problem we formulated. If you want you can also plot the locked_out data layer
 
 
@@ -343,10 +343,10 @@ budget <- terra::global(cost, "sum", na.rm = TRUE)[[1]] * 0.3
 # create new problem with boundary penalties added to it
 p4 <-
   p2 %>%
-  # add your locked out constraint here 
-  
-  # solve the problem
-  s4 <- solve(p4)
+  add_locked_out_constraints(locked_out)
+
+# solve the problem
+s4 <- solve(p4)
 
 # plot the solution
 par(mfrow=c(2,2))# split into 3 plots side by side
@@ -379,7 +379,8 @@ plot(3*s1+s2, main = "Baseline", axes = FALSE)
 
 py <-
   problem(cost, features = species) %>%
-  add_min_shortfall_objective(budget) %>% # replace with add_min_set_objective() 
+  # add_min_shortfall_objective(budget) %>% # replace this
+  add_min_set_objective() %>% # with this
   add_relative_targets(0.3) %>%
   add_binary_decisions() %>%
   add_locked_in_constraints(PAs) %>%
@@ -403,27 +404,24 @@ plot(
 # We will then  replacee `cost` with `cost_null` in` problem(cost, features = species)`. 
 # How does it compare to the layer with cost?
 
-# Hint: replace all `cost` with `cost_null` in `budget` and `pr`
-
-
 
 # make the cost 1 on land and NA at sea
 cost_null = ifel(!is.na(cost),1,NA)
 
 # calculate budget
-budget <- terra::global(cost, "sum", na.rm = TRUE)[[1]] * 0.3 # replace cost with cost_null here
+budget <- terra::global(cost_null, "sum", na.rm = TRUE)[[1]] * 0.3# replace cost with cost_null here
 
 # create problem
 pr <-
-  problem(cost, features = species) %>% # replacee cost with cost_null i
+  problem(cost_null, features = species) %>% # replacee cost with cost_null in problem(cost, features = species) %>% 
   add_min_shortfall_objective(budget) %>%
   add_relative_targets(0.3) %>%
   add_binary_decisions() %>%
   add_default_solver(gap = 0.1, verbose = FALSE)
 
-
 sr <- solve(pr)
 
+# changed the plot colours because why not
 # plot the solution
 par(mfrow=c(1,2))# split into 2 plots side by side
 plot(s1, main = "with cost", axes = FALSE)
