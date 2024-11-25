@@ -1,7 +1,8 @@
 # Course overview
 
-- Learn how and why protected areas are important
-- Learn how to implement a protected area network
+- Learn how and why protected areas are important (Lecture)
+- Lear the principles of systematic conservation planning (Lecture)
+- Learn how to implement a protected area network (Lecture + Practical)
 
 
 ## Download the practical data
@@ -15,7 +16,8 @@
 
 ## Packages
 
-Go to `code/01_installation.R` to get a list of R packages to install. They are also copied below:
+1. Open the R project `MSc_Protected_Areas.Rproj`
+2. Go to `code/01_installation.R` to get a list of R packages to install and run that code. They are also copied below:
 
 ```r 
 install.packages("prioritizr")
@@ -26,4 +28,5 @@ install.packages("highs", repos = "https://cran.rstudio.com/")
 
 ## Run the practical 
 
-The practical code is here `code/01_practical.R`, and if you want to have a more visually pretty version of the code, it is in `tutorial/MSc_PA_practical_excercise.html`
+1. Open `tutorial/MSc_PA_practical_exercise.html` to get the insttructions of the exercises.
+2. The practical code is in `code/01_practical.R`
