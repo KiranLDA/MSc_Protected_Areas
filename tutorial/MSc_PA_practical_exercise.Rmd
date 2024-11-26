@@ -17,7 +17,7 @@ knitr::opts_chunk$set(root.dir = "C:/Users/kdh10kg/Documents/GitHub/MSc_Protecte
 - Learn the principles of systematic conservation planning (Lecture)
 - Learn how to implement a protected area network (Lecture + Practical)
 
-Protected areas are a cornerstone of conservation. In fact, the world has committed to protecting 30% of the planet by 2030. But how do we make that protection meaningful? This practical will use structured decision-making to protect land in Madagascar based on your species distribution maps from your previous practical. The software we will use to do this is `prioritizr`.
+Protected areas are a cornerstone of conservation. In fact, the world has committed to protecting 30% of the planet by 2030. But how do we make that protection meaningful? This practical will use structured decision-making to protect land in Madagascar based on your species distribution maps from your previous practical. The software we will use to do this is `prioritizr`. This is the main paper about using prioritizr for systematic conservation planning: https://conbio.onlinelibrary.wiley.com/doi/full/10.1111/cobi.14376 
 
 # Installation
 ## R and Rstudio
