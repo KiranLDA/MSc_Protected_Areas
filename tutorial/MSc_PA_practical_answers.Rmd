@@ -7,7 +7,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(root.dir = "C:/Users/kdh10kg/Documents/github/MSc_Protected_Areas/",
+knitr::opts_chunk$set(root.dir = "C:/Users/kdh10kg/Documents/GitHub/MSc_Protected_Areas/",
                       echo = TRUE)#
 ```
 
@@ -59,8 +59,8 @@ Now get the code for the practical from Go to `code/02_practical.R`
 
 Replace with the path where you downloaded `MSc_Protected_Areas`. This means that your code will run from this directory. Make sure you use `/` or `\\` in your path name, otherwise you will get an error.
 
-```{r wd}
-setwd("C:/Users/kdh10kg/Documents/github/MSc_Protected_Areas/")
+```r
+setwd("C:/Downloads/MSc_Protected_Areas-main/MSc_Protected_Areas-main/")
 ```
 
 # Load Packages
