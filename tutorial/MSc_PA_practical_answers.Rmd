@@ -14,7 +14,7 @@ knitr::opts_chunk$set(root.dir = "C:/Users/kdh10kg/Documents/github/MSc_Protecte
 # Course overview
 
 - Learn how and why protected areas are important (Lecture)
-- Lear the principles of systematic conservation planning (Lecture)
+- Learn the principles of systematic conservation planning (Lecture)
 - Learn how to implement a protected area network (Lecture + Practical)
 
 Protected areas are a cornerstone of conservation. In fact, the world has committed to protecting 30% of the planet by 2030. But how do we make that protection meaningful? This practical will use structured decision-making to protect land in Madagascar based on your species distribution maps from your previous practical. The software we will use to do this is `prioritizr`.
@@ -104,11 +104,11 @@ plot(sum(species))
 
 A very important element of protected area planning is the cost. Wherever we put a protected area, there will be a cost involved. Cost can be:
 
-- no cost: cost is equal across all planning units, which means the prioritisation will only rely on the biodiversity data. However, a protected area plan that doesn't account for cost is not likely to be very helpful.
-- directly estimated: we can do an economic evaluation about economic losses of converting land to  protected land. This can be through the cost of purchasing land, costing the staff needed to patrol, the revenue from tourism, the loss of opportunities (loss of mining land, grazing land, agricultural land, and even homes).
+- no cost: cost is equal across all planning units, which means the prioritisation will only rely on the biodiversity data. However, a protected area plan that doesn't account for cost (and therefore people) is not likely to be very helpful.
+- directly estimated: we can do an economic evaluation about economic losses of converting land to protected land. This can be through the cost of purchasing land, costing the staff needed to patrol, the revenue from tourism, the loss of opportunities (loss of mining land, grazing land, agricultural land, and even homes).
 - indirectly estimated: we can estimate what land is most costly. For example, the human footprint index is often used to see where people are using land. We then make the assumption that areas that people use are most costly and create the greatest conflict, and should be avoided as a place to put a protected area.
 
-Here, it's an execise, so we use the Human footprint layer, which is downloaded from this paper:
+Here, it's an exercise, so we use the Human footprint layer, which is downloaded from this paper:
 https://www.nature.com/articles/s41597-022-01284-8#Sec12
 
 ```{r cost}
@@ -418,7 +418,7 @@ What is the first thing you notice? It's much longer... This is because it has t
 
 # Calculate importance scores
 
-The importance of irreplaceaability tells you how important each cell is to the solution, if it is red, you absolutely need to protect that cell. If it is beige, it is interchangeable with other cells. If you have a lot of common species (like we do), then most of them will be beige, but if you have rare narrow range endemics, then those cells will become red. 
+Irreplaceability tells you how important each cell is to the solution: if it is red, you absolutely need to protect that cell. If it is beige, it is interchangeable with other cells. If you have a lot of common species (like we do), then most of them will be beige, but if you have rare narrow range endemics, then those cells will become red (because they only occur in a few locations where they must be protected otherwise they will be lost). 
 
 ```{r}
 rc <-

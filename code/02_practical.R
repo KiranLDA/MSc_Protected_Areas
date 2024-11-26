@@ -45,7 +45,7 @@ plot(sum(species))
 # 
 # - no cost: cost is equal across all planning units, which means the prioritisation
 # will only rely on the biodiversity data. However, a protected area plan that doesn't 
-# account for cost is not likely to be very helpful.
+# account for cost (and therefore people) is not likely to be very helpful.
 #   
 # - directly estimated: we can do an economic evaluation about economic losses of 
 # converting land to  protected land. This can be through the cost of purchasing land, 
@@ -58,7 +58,7 @@ plot(sum(species))
 # most costly and created the greatest conflict, and should be avoided as a place 
 # to put a protected area.
 # 
-# Here, it's an excecise, so we use the Human footprint layer, 
+# Here, it's an exercise, so we use the Human footprint layer, 
 # which is downloaded from this paper:
 #   https://www.nature.com/articles/s41597-022-01284-8#Sec12
 
@@ -212,8 +212,7 @@ print(mean(pt_target_coverage$met) * 100)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Adding existing PAs
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Madagascar already had a Protected Area network.
-# Do the areas we are protecting overlap with the existing protected areas? 
+# Madagascar already has a Protected Area network.
 # Perhaps we should develop protected areas that complement and enhance the existing ones.
 
 # load protected areas
@@ -283,7 +282,7 @@ budget <- terra::global(cost, "sum", na.rm = TRUE)[[1]] * 0.3
 # create new problem with boundary penalties added to it
 p3 <-
   p2 %>%
-  add_boundary_penalties(penalty = 0.003, edge_factor = 0.7)
+  add_boundary_penalties(penalty = 0.003, edge_factor = 0.5)
 
 # solve the problem
 s3 <- solve(p3)
@@ -312,11 +311,12 @@ print(mean(p3_target_coverage$met) * 100)
 # Calculate importance scores
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# The importance of irreplaceaability tells you how important each cell is to the solution,
+# Irreplaceability tells you how important each cell is to the solution:
 # if it is red, you absolutely need to protect that cell. If it is beige, 
 # it is interchangeable with other cells. If you have a lot of common species (like we do), 
 # then most of them will be beige, but if you have rare narrow range endemics, 
-# then those cells will become red. 
+# then those cells will become red (because they only occur in a few locations
+# where they must be protected otherwise they will be lost).
 
 
 rc <-
@@ -344,7 +344,7 @@ plot(
 # 
 # Go find the `locked_out.tif` raster in your data directory and use `terra::rast` 
 # to import it. Then use the `add_locked_out_constraints(locked_out)` to lock out your raster 
-# from the p2 problem we formulated. If you want you can also plot the locked_out data layer
+# from the p2 problem we formulated. If you want you can also plot the locked_out data layer.
 
 
 locked_out = terra::rast("data/locked_out.tif")
@@ -355,7 +355,7 @@ budget <- terra::global(cost, "sum", na.rm = TRUE)[[1]] * 0.3
 # create new problem with boundary penalties added to it
 p4 <-
   p2 %>%
-  # add your locked out constraint here 
+  # add your locked out constraint here: add_locked_out_constraints(locked_out) 
   
   # solve the problem
   s4 <- solve(p4)
@@ -400,10 +400,12 @@ py <-
 sy <- solve(py)
 
 
-plot(
-  sy, main = "Prioritization",
-  col = c("grey90", "darkgreen")
-)
+# plot the solution
+par(mfrow=c(1,2))# split into 2 plots side by side
+plot(s2, main = "maximise biodiversity", axes = FALSE)
+plot(sy, main = "minimise cost", axes = FALSE)
+par(mfrow=c(1,1))# go back to only 1 plot
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Exercise 5: Ignore cost

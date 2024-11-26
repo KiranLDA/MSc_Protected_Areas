@@ -1,7 +1,7 @@
 # Course overview
 
 - Learn how and why protected areas are important (Lecture)
-- Lear the principles of systematic conservation planning (Lecture)
+- Learn the principles of systematic conservation planning (Lecture)
 - Learn how to implement a protected area network (Lecture + Practical)
 
 
@@ -10,8 +10,8 @@
 1. Go to https://github.com/KiranLDA/MSc_Protected_Areas
 2. Click on the big green button 'CODE'.
 3. Select 'Download ZIP'.
-4. Save the file to your desktop.
-5. Once opened unzip/extract all files in the ZIP file.
+4. Save the file to your computer in your chosen location.
+5. Once downloaded, unzip/extract all files in the ZIP file.
 
 ## Packages
 
@@ -29,4 +29,4 @@ install.packages("highs", repos = "https://cran.rstudio.com/")
 
 1. Open `tutorial/MSc_PA_practical_exercise.html` to get the instructions of the exercises.
 2. The practical code is in `code/02_practical.R`
-3. Set your working directory in the code to your unzipped directory (probably `MSc_Protected_Areas-main/MSc_Protected_Areas-amin`)
+3. Set your working directory in the code to your unzipped directory (probably `MSc_Protected_Areas-main/MSc_Protected_Areas-main`)
