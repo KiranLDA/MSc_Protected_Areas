@@ -211,11 +211,11 @@ The things that we need to track are:
 - **Budget**: the total cost of the prioritization will represent a 30% of the total land value in the study area. Given this budget, we want the prioritization to increase feature representation, as much as possible, 
 - **Features**: each feature (i.e. species) would, ideally, have 30% of its distribution covered by the prioritization. In this scenario, we can either purchase all of the land inside a given planning unit, or none of the land inside a given planning unit. 
 - **Planning Units**: These are sites that we are considering to protect or not. We have the option to protect or not each site. In this case, each site represents one pixel of the raster
--
+
 We then need to translate this to code:
 
 - We start by creating a new `problem()` that will use a
-- **minimum shortfall objective** to spend the budget while getting as much as possible (via `add_min_shortfall_objective()`), with 
+- **minimum shortfall objective** to spend the budget (via `add_min_shortfall_objective()`), while getting as close as possible to a
 - **relative targets of 30%** of the range of each species(via `add_relative_targets()`), 
 - **binary decisions** to purchase+protect or not (via `add_binary_decisions()`), and 
 - **near-optimal solutions** (i.e., 10% from optimality) using the 
@@ -317,6 +317,7 @@ print(pt_target_coverage)
 
 print(mean(pt_target_coverage$met) * 100)
 ```
+Note that a lot of species still have 70% of their range protected... How might this be possible when we are only protecting what we can purchase with 30% of our budget (which is close to 30% of the area of Madagascar)? This is because many species will have a range that is smaller than ~30% of Madagascar, so protecting ~30% will protect >30% of many species ranges, especially if they are narrow range species.
 
 # Adding existing PAs
 
@@ -390,7 +391,7 @@ budget <- terra::global(cost, "sum", na.rm = TRUE)[[1]] * 0.3
 # create new problem with boundary penalties added to it
 p3 <-
   p2 %>%
-  add_boundary_penalties(penalty = 0.003, edge_factor = 0.7)
+  add_boundary_penalties(penalty = 0.003, edge_factor = 0.5)
 
 # solve the problem
 s3 <- solve(p3)
@@ -503,7 +504,7 @@ par(mfrow=c(1,1))# go back to only 1 plot
 ```
 # Exercise 5: Ignore cost
 
-So far we have used cost as the human footprint layer, but what if we want to just ignore cost and look only at the biodiversity? We are going to create a new cost layer called `cost_null` where cost is set to 1 on land, and NA everywhere else. We will then  replacee `cost` with `cost_null` in` problem(cost, features = species)`. How does it compare to the layer with cost?
+So far we have used cost as the human footprint layer, but what if we want to just ignore cost and look only at the biodiversity? We are going to create a new cost layer called `cost_null` where cost is set to 1 on land, and NA everywhere else. We will then  replace `cost` with `cost_null` in` problem(cost, features = species)`. How does it compare to the layer with cost?
 
 Hint: replace all `cost` with `cost_null` in `budget` and `pr`
 

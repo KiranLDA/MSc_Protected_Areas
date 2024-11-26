@@ -6,8 +6,8 @@
 # This means that your code will run from this directory. 
 # Make sure you use `/` or `\\` in your path name, otherwise you will get an error.
 
-setwd("C:/Users/kdh10kg/Documents/github/MSc_Protected_Areas/")
-
+# setwd("C:/Users/kdh10kg/Documents/github/MSc_Protected_Areas/")
+setwd("C:/Downloads/MSc_Protected_Areas-main/MSc_Protected_Areas-main/")
 
 # Load Packages
 library(prioritizr)
@@ -112,7 +112,7 @@ library(highs)
 # install.packages("highs", repos = "https://cran.rstudio.com/")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Spatial Prioritization
+# Spatial Prioritisation
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Formulate the problem
 
@@ -122,7 +122,7 @@ library(highs)
 
 # Translated to code:
 # - We start by creating a new `problem()` that will use a
-# - minimum shortfall objective to spend the budget while getting as much as possible (via `add_min_shortfall_objective()`), with 
+# - minimum shortfall objective to spend the budget (via `add_min_shortfall_objective()`), while getting as close as possible with 
 # - relative targets of 30% of the range of each species(via `add_relative_targets()`), 
 # - binary decisions to purchase+protect or not (via `add_binary_decisions()`), and 
 # - near-optimal solutions (i.e., 10% from optimality) using the 
@@ -325,7 +325,7 @@ rc <-
 print(rc)
 
 # plot the total importance scores
-## note that gray cells are not selected by the prioritization
+## note that gray cells are not selected by the prioritisation
 plot(
   rc[["total"]], main = "Importance scores", axes = FALSE,
   breaks = c(0, 1e-10, 0.005, 0.01, 0.025),
@@ -412,7 +412,7 @@ par(mfrow=c(1,1))# go back to only 1 plot
 # So far we have used cost as the human footprint layer, but what if we want to just ignore cost 
 # and look only at the biodiversity? We are going to create a new cost layer called `cost_null` 
 # where cost is set to 1 on land, and NA everywhere else. 
-# We will then  replacee `cost` with `cost_null` in` problem(cost, features = species)`. 
+# We will then  replace `cost` with `cost_null` in` problem(cost, features = species)`. 
 # How does it compare to the layer with cost?
 
 # Hint: replace all `cost` with `cost_null` in `budget` and `pr`

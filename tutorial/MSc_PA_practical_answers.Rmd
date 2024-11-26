@@ -215,7 +215,7 @@ The things that we need to track are:
 We then need to translate this to code:
 
 - We start by creating a new `problem()` that will use a
-- **minimum shortfall objective** to spend the budget while getting as much as possible (via `add_min_shortfall_objective()`), with 
+- **minimum shortfall objective** to spend the budget (via `add_min_shortfall_objective()`), while getting as close as possible to a
 - **relative targets of 30%** of the range of each species(via `add_relative_targets()`), 
 - **binary decisions** to purchase+protect or not (via `add_binary_decisions()`), and 
 - **near-optimal solutions** (i.e., 10% from optimality) using the 
@@ -319,6 +319,8 @@ print(pt_target_coverage)
 print(mean(pt_target_coverage$met) * 100)
 ```
 
+Note that a lot of species still have 70% of their range protected... How might this be possible when we are only protecting what we can purchase with 30% of our budget (which is close to 30% of the area of Madagascar)? This is because many species will have a range that is smaller than ~30% of Madagascar, so protecting ~30% will protect >30% of many species ranges, especially if they are narrow range species.
+
 # Adding existing PAs
 
 Madagascar already had a Protected Area network. Do the areas we are protecting overlap with the existing protected areas? Perhaps we should develop protected areas that complement and enhance the existing ones.
@@ -391,7 +393,7 @@ budget <- terra::global(cost, "sum", na.rm = TRUE)[[1]] * 0.3
 # create new problem with boundary penalties added to it
 p3 <-
   p2 %>%
-  add_boundary_penalties(penalty = 0.003, edge_factor = 0.7)
+  add_boundary_penalties(penalty = 0.003, edge_factor = 0.5)
 
 # solve the problem
 s3 <- solve(p3)
@@ -511,7 +513,7 @@ par(mfrow=c(1,1))# go back to only 1 plot
 
 # Exercise 5: Ignore cost
 
-So far we have used cost as the human footprint layer, but what if we want to just ignore cost and look only at the biodiversity? We are going to create a new cost layer called `cost_null` where cost is set to 1 on land, and NA everywhere else. We will then  replacee `cost` with `cost_null` in` problem(cost, features = species)`. How does it compare to the layer with cost?
+So far we have used cost as the human footprint layer, but what if we want to just ignore cost and look only at the biodiversity? We are going to create a new cost layer called `cost_null` where cost is set to 1 on land, and NA everywhere else. We will then  replace `cost` with `cost_null` in` problem(cost, features = species)`. How does it compare to the layer with cost?
 
 Hint: replace all `cost` with `cost_null` in `budget` and `pr`
 
@@ -523,7 +525,7 @@ budget <- terra::global(cost_null, "sum", na.rm = TRUE)[[1]] * 0.3# replace cost
 
 # create problem
 pr <-
-  problem(cost_null, features = species) %>% # replacee cost with cost_null in problem(cost, features = species) %>% 
+  problem(cost_null, features = species) %>% # replace  cost with cost_null in problem(cost, features = species) %>% 
   add_min_shortfall_objective(budget) %>%
   add_relative_targets(0.3) %>%
   add_binary_decisions() %>%
