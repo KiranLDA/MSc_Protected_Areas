@@ -150,7 +150,7 @@ The world is a sphere, and for us to visualise it on paper as a rectangle, we ne
 
 
 
-```{r image_grob8, fig.show = "hold", out.width = "40%", fig.align = "default", echo=FALSE}
+```{r image_grob8, fig.show = "hold", out.width = "30%", fig.align = "default", echo=FALSE}
 
 knitr::include_graphics("https://i.guim.co.uk/img/static/Guardian/global/gallery/2009/apr/17/geography/mercator-5130.jpg?w=1010&q=20&auto=format&usm=12&fit=max&dpr=2&s=7fee64700cc5a92d3ffd1ad6306ad53e")
 
