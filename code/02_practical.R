@@ -1,18 +1,31 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Background
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# This is the main paper about using prioritizr for systematic conservation planning: 
+# https://conbio.onlinelibrary.wiley.com/doi/full/10.1111/cobi.14376 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Set the Working Directory
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Replace with the path where you downloaded `MSc_Protected_Areas`. 
-# This means that your code will run from this directory. 
-# Make sure you use `/` or `\\` in your path name, otherwise you will get an error.
+# # Ignore this unless you have problems accessing files later (e.g. species.tif)
+#
+# # If you have any problems it could be related to your path.
+# # Check what folder you are working from by using
+# getwd()
+# # if the folder path you are working from is different from
+# # the path where you downloaded `MSc_Protected_Areas then you can change it using the setwd() code below.
+# # Make sure you use `/` or `\\` in your path name, otherwise you will get an error.
+# setwd("C:/Downloads/MSc_Protected_Areas-main/MSc_Protected_Areas-main/")
 
-setwd("C:/Downloads/MSc_Protected_Areas-main/MSc_Protected_Areas-main/")
 
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Load Packages
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 library(prioritizr)
 library(terra)
-
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Load the files
@@ -47,19 +60,19 @@ plot(sum(species))
 # will only rely on the biodiversity data. However, a protected area plan that doesn't 
 # account for cost (and therefore people) is not likely to be very helpful.
 #   
-# - directly estimated: we can do an economic evaluation about economic losses of 
+# - directly estimated: we can evaluate the economic losses of 
 # converting land to  protected land. This can be through the cost of purchasing land, 
-# costing the staff needed to patrol, the revenue from tourism, the loss 
+# the staff needed to patrol, the revenue from tourism, and the loss 
 # of opportunities (loss of mining land, grazing land, agricultural land, and even homes).
 # 
 # - indirectly estimated: we can estimate what land is most costly. 
 # For example, the human footprint index is often used to see where people 
-# are using land. We then make the assumption that areas that people use are 
+# use land. We then make the assumption that areas that people use are 
 # most costly and created the greatest conflict, and should be avoided as a place 
 # to put a protected area.
 # 
-# Here, it's an exercise, so we use the Human footprint layer, 
-# which is downloaded from this paper:
+# Here, it's an exercise, so we use the Human footprint layer as a proxy for an indirect cost estimate, 
+# The layer was downloaded from this paper:
 #   https://www.nature.com/articles/s41597-022-01284-8#Sec12
 
 
@@ -162,7 +175,7 @@ print(attr(s1, "status"))
 plot(s1, main = "Solution", axes = FALSE)
 
 
-## How many planning units were protected per solution?
+## How many planning units were protected in this solution?
 eval_n_summary(p1, s1)
 
 ## How much does it cost?
@@ -174,14 +187,15 @@ p1_target_coverage <- eval_target_coverage_summary(p1, s1)
 print(p1_target_coverage)
 
 
-## How many were not protected 30%
+## What percentage of species had at least 30% of their range protected?
 print(mean(p1_target_coverage$met) * 100)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Exercise 2
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# How many species have 70% of their range protected?
+
+# What would be the solution if we require a minimum of 70% of the species range to be protected?
 
 # Hint: replace the value in `add_relative_targets()`
 
@@ -230,17 +244,14 @@ plot(PAs, main="Low Res PAs")
 par(mfrow = c(1,1))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## Modify the problem to add PAs in
+## Modify the problem to add PAs
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # The function `add_locked_in_constraints()` 
 # allows us to add in areas that are "locked in" 
 # i.e. already conserved or protected. 
 
-
-# need to reset budget because it was modified in exercise 2
-budget <- terra::global(cost, "sum", na.rm = TRUE)[[1]] * 0.3
-
+# create new problem where protected areas are locked in
 p2 <-  p1 %>%
   add_locked_in_constraints(PAs) # this is the only new line
 
@@ -253,12 +264,18 @@ plot(s1, main = "without PAs", axes = FALSE)
 plot(s2, main = "With PAs", axes = FALSE)
 par(mfrow=c(1,1)) # Go back to one plot
 
-
-# calculate number of selected planning units by solution
+# calculate the number of selected planning units in the solution
 eval_n_summary(p2, s2)
 
-# calculate total cost of solution
+# calculate the total cost of the solution
 eval_cost_summary(p2, s2)
+# Note that the scenario is more expensive - why do you think that is?
+# It is likely the first scenario has no constraints and protects the cheapest sites first 
+# that meet the biodiversity target. However, some of these sites are already protected in scenario 2, 
+# so the algorithm has to consider sites that are not already protected, which are more expensive
+# in order to meet the conservation scenario.
+# The more we protect, the more expensive it gets because we use the cheaper sites at the
+# beginning, and add more and more costly sites as we go on
 
 # calculate target coverage for the solution
 p2_target_coverage <- eval_target_coverage_summary(p2, s2)
@@ -277,10 +294,7 @@ print(mean(p2_target_coverage$met) * 100)
 # that occur on the outer edge of the study area are not overly penalized.
 
 
-# need to reset budget because it was modified in exercise 2
-budget <- terra::global(cost, "sum", na.rm = TRUE)[[1]] * 0.3
-
-# create new problem with boundary penalties added to it
+# create a new problem with boundary penalties added to it
 p3 <-
   p2 %>%
   add_boundary_penalties(penalty = 0.003, edge_factor = 0.5)
@@ -299,7 +313,7 @@ par(mfrow=c(1,1))# go back to only 1 plot
 p3_target_coverage <- eval_target_coverage_summary(p3, s3)
 print(p3_target_coverage)
 
-# check percentage of the features that have their target met given the solution
+# check the percentage of the features that have their target met given the solution 
 print(mean(p3_target_coverage$met) * 100)
 
 
@@ -324,9 +338,6 @@ rc <-
   p3 %>%
   eval_ferrier_importance(s3)
 
-# print scores
-print(rc)
-
 # plot the total importance scores
 ## note that gray cells are not selected by the prioritisation
 plot(
@@ -350,19 +361,17 @@ plot(
 
 locked_out = terra::rast("data/locked_out.tif")
 
-# need to reset budget because it was modified in exercise 1
-budget <- terra::global(cost, "sum", na.rm = TRUE)[[1]] * 0.3
 
 # create new problem with boundary penalties added to it
 p4 <-
   p2 %>%
   # add your locked out constraint here: add_locked_out_constraints(locked_out) 
   
-  # solve the problem
-  s4 <- solve(p4)
+# solve the problem
+ s4 <- solve(p4)
 
 # plot the solution
-par(mfrow=c(2,2))# split into 3 plots side by side
+par(mfrow=c(2,2))# split into 4 plots side by side
 plot(s1, main = "Baseline", axes = FALSE)
 plot(s2, main = "With PAs", axes = FALSE)
 plot(s4, main = "With PAs + Avoid cities", axes = FALSE)
@@ -373,7 +382,7 @@ par(mfrow=c(1,1))# go back to only 1 plot
 p4_target_coverage <- eval_target_coverage_summary(p4, s4)
 print(p4_target_coverage)
 
-# check percentage of the features that have their target met given the solution
+# check the percentage of the features that have their target met given the solution
 print(mean(p4_target_coverage$met) * 100)
 
 
@@ -385,7 +394,6 @@ plot(3*s1+s2, main = "Baseline", axes = FALSE)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Exercise 4: MARXAN
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 # Get the cheapest solution that meets the biodiversity target, this can be done by replacing 
 # add_min_shortfall_objective(budget) with add_min_set_objective() in p1. We no longer rely on a budget
