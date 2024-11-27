@@ -32,9 +32,8 @@ Make sure you have Rstudio and R installed:
 1. Go to https://github.com/KiranLDA/MSc_Protected_Areas
 2. Click on the big green button 'CODE'.
 3. Select 'Download ZIP'.
-4. Save the file to your desktop.
-5. Once opened unzip/extract all files in the ZIP file.
-6. Then also unzip the rasters inside `data/data.zip` into the `data` folder.
+4. Save the file to your computer in your chosen location.
+5. Once downloaded, unzip/extract all files in the ZIP file.
 
 ## Packages
 
@@ -57,7 +56,7 @@ Now get the code for the practical from Go to `code/02_practical.R`
 
 # Set the Working Directory
 
-**Ignore this section unless you run into problems accessing files later (e.g. species.tif)**
+## **Ignore this section unless you run into problems accessing files later (e.g. species.tif)**
 
 If you have any problems it could be related to your path. Check what folder you are working from by using
 

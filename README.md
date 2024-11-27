@@ -29,4 +29,3 @@ install.packages("highs", repos = "https://cran.rstudio.com/")
 
 1. Open `tutorial/MSc_PA_practical_exercise.html` to get the instructions of the exercises.
 2. The practical code is in `code/02_practical.R`
-3. Set your working directory in the code to your unzipped directory (probably `MSc_Protected_Areas-main/MSc_Protected_Areas-main`)
