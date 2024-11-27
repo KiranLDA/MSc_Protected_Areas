@@ -54,20 +54,6 @@ While the packages install, we can do this exercise to understand the value of u
 
 Now get the code for the practical from Go to `code/02_practical.R` 
 
-# Set the Working Directory
-
-## **Ignore this section unless you run into problems accessing files later (e.g. species.tif)**
-
-If you have any problems it could be related to your path. Check what folder you are working from by using
-
-```r
-getwd()
-```
-If the folder path you are working from is different from the path where you downloaded `MSc_Protected_Areas` then you can change it using the setwd() code below. Make sure you use your own path (not mine) and use `/` or `\\` in your path name, otherwise you will get an error.
-
-```r
-setwd("C:/Downloads/MSc_Protected_Areas-main/MSc_Protected_Areas-main/")
-```
 
 # Load Packages
 
@@ -150,11 +136,14 @@ The world is a sphere, and for us to visualise it on paper as a rectangle, we ne
 
 
 
-```{r image_grob8, fig.show = "hold", out.width = "30%", fig.align = "default", echo=FALSE}
+```{r image_grob8, fig.show = "hold", out.width = "50%", fig.align = "default", echo=FALSE}
 
 knitr::include_graphics("https://i.guim.co.uk/img/static/Guardian/global/gallery/2009/apr/17/geography/mercator-5130.jpg?w=1010&q=20&auto=format&usm=12&fit=max&dpr=2&s=7fee64700cc5a92d3ffd1ad6306ad53e")
+```
 
-knitr::include_graphics("https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Winkel_triple_projection_SW.jpg/700px-Winkel_triple_projection_SW.jpg")
+```{r image_groba, fig.show = "hold", out.width = "50%", fig.align = "default", echo=FALSE}
+
+knitr::include_graphics("https://upload.wikimedia.org/wikipedia/commons/9/91/Winkel_triple_projection_SW.jpg")
 
 ```
 
@@ -193,14 +182,14 @@ Do they look the same?
 
 So let’s make sure that we have a solver installed. This is important because prioritizr interfaces with the solver to use it's optimization algorithms to generate spatial prioritizations. 
 
-If this is your first time using the prioritizr R package, please install the HiGHS solver using the following R code. Although the HiGHS solver is relatively fast and easy to install. If later you really get into protected area planning, then use your Queen Mary VPN to install the Gurobi software suite and the Gurobi R package for best performance (see the [Gurobi Installation Guide for details](https://prioritizr.net/articles/gurobi_installation_guide.html)).
+Today we are are using the HiGHS solver because it is easy to install. If later you really get into protected area planning, then use your Queen Mary VPN to install the Gurobi software suite and the Gurobi R package for best performance (see the [Gurobi Installation Guide for details](https://prioritizr.net/articles/gurobi_installation_guide.html)).
 
 ```r
 # test the installation
 library(highs)
 
 # if needed, install HiGHS solver, but this should have been done before the practical
-install.packages("highs", repos = "https://cran.rstudio.com/")
+# install.packages("highs", repos = "https://cran.rstudio.com/")
 ```
 
 # Spatial Prioritization
